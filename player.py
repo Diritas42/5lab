@@ -14,21 +14,21 @@ class Player:
         self.debug_mode = debug_mode
         self.collision_count = 0
     
-    def update(self, keys, walls):
+    def update(self, pressed_keys, walls):
         move_x = 0
         move_y = 0
-        speed = self.run_speed if keys[pygame.K_LSHIFT] else self.speed
+        speed = self.run_speed if pressed_keys[pygame.K_LSHIFT] else self.speed
         
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
+        if pressed_keys[pygame.K_w] or pressed_keys[pygame.K_UP]:
             move_y = -speed
             self.direction = 2
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        if pressed_keys[pygame.K_s] or pressed_keys[pygame.K_DOWN]:
             move_y = speed
             self.direction = 3
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+        if pressed_keys[pygame.K_a] or pressed_keys[pygame.K_LEFT]:
             move_x = -speed
             self.direction = 1
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        if pressed_keys[pygame.K_d] or pressed_keys[pygame.K_RIGHT]:
             move_x = speed
             self.direction = 0
         
