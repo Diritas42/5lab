@@ -167,10 +167,11 @@ class Enemy:
         return self.has_line_of_sight(player_x, player_y, walls)
     
     def has_line_of_sight(self, player_x, player_y, walls):
+        # ИСПРАВЛЕНИЕ: заменили playerY на player_y
         for wall in walls:
             if self.line_intersects_rect(
                 self.x + self.width/2, self.y + self.height/2,
-                player_x + 10, playerY + 10, wall
+                player_x + 10, player_y + 10, wall  # Исправлено здесь
             ):
                 return False
         return True
