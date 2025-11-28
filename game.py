@@ -15,10 +15,14 @@ class Game:
         pygame.display.set_caption("METAL GEAR PYTHON")
         self.clock = pygame.time.Clock()
         
+        # Создаем поверхность для игрового поля
+        self.game_surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
+        
         # Шрифты для UI
         self.font = pygame.font.SysFont('Courier New', 16)
         self.title_font = pygame.font.SysFont('Courier New', 36)
         self.alert_font = pygame.font.SysFont('Courier New', 32)
+        self.small_font = pygame.font.SysFont('Courier New', 14)
         
         # Игровые объекты
         self.player = None
@@ -337,28 +341,39 @@ class Game:
     
     def render(self):
         # Очистка экрана
-        self.screen.fill(BLACK)
+        self.screen.fill(DARKER_BLUE)
         
-        # Отрисовка уровня
-        self.level.render(self.screen)
+        # Очистка игровой поверхности
+        self.game_surface.fill(BLACK)
         
-        # Отрисовка документов
+        # Отрисовка уровня на игровой поверхности
+        self.level.render(self.game_surface)
+        
+        # Отрисовка документов на игровой поверхности
         for doc in self.documents:
-            doc.render(self.screen)
+            doc.render(self.game_surface)
         
-        # Отрисовка врагов
+        # Отрисовка врагов на игровой поверхности
         for enemy in self.enemies:
-            enemy.render(self.screen, self.is_alert_mode)
+            enemy.render(self.game_surface, self.is_alert_mode)
         
-        # Отрисовка игрока
-        self.player.render(self.screen)
+        # Отрисовка игрока на игровой поверхности
+        self.player.render(self.game_surface)
         
         # Отрисовка индикатора обнаружения
         if self.detection_level > 0:
             alpha = 0.3 if self.is_alert_mode else self.detection_level/200
-            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            overlay = pygame.Surface((GAME_WIDTH, GAME_HEIGHT), pygame.SRCALPHA)
             overlay.fill((255, 0, 0, int(alpha * 255)))
-            self.screen.blit(overlay, (0, 0))
+            self.game_surface.blit(overlay, (0, 0))
+        
+        # Отображаем игровую поверхность на основном экране
+        self.screen.blit(self.game_surface, (GAME_OFFSET_X, GAME_OFFSET_Y))
+        
+        # Рамка вокруг игрового поля
+        pygame.draw.rect(self.screen, GREEN, 
+                        (GAME_OFFSET_X - 2, GAME_OFFSET_Y - 2, 
+                         GAME_WIDTH + 4, GAME_HEIGHT + 4), 2)
         
         # Отрисовка UI
         self.render_ui()
@@ -371,14 +386,29 @@ class Game:
         pygame.display.flip()
     
     def render_ui(self):
-        # Панель информации
-        info_panel_1 = pygame.Rect(20, 20, 200, 80)
-        info_panel_2 = pygame.Rect(240, 20, 200, 80)
+        # Верхняя панель с заголовком и информацией
+        header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, GAME_OFFSET_Y - 10)
+        pygame.draw.rect(self.screen, DARK_BLUE, header_rect)
+        pygame.draw.line(self.screen, GREEN, (0, GAME_OFFSET_Y - 10), (SCREEN_WIDTH, GAME_OFFSET_Y - 10), 2)
         
-        pygame.draw.rect(self.screen, DARK_BLUE, info_panel_1)
-        pygame.draw.rect(self.screen, DARK_BLUE, info_panel_2)
-        pygame.draw.rect(self.screen, GREEN, info_panel_1, 2)
-        pygame.draw.rect(self.screen, GREEN, info_panel_2, 2)
+        # Заголовок
+        title_text = self.title_font.render("METAL GEAR PYTHON", True, GREEN)
+        subtitle_text = self.font.render("Стелс-миссия", True, LIGHT_GRAY)
+        
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 20))
+        self.screen.blit(subtitle_text, (SCREEN_WIDTH // 2 - subtitle_text.get_width() // 2, 60))
+        
+        # Панели информации
+        info_panel_1 = pygame.Rect(GAME_OFFSET_X, 10, 200, 40)
+        info_panel_2 = pygame.Rect(GAME_OFFSET_X + 220, 10, 200, 40)
+        info_panel_3 = pygame.Rect(GAME_OFFSET_X + 440, 10, 200, 40)
+        
+        pygame.draw.rect(self.screen, PANEL_BG, info_panel_1)
+        pygame.draw.rect(self.screen, PANEL_BG, info_panel_2)
+        pygame.draw.rect(self.screen, PANEL_BG, info_panel_3)
+        pygame.draw.rect(self.screen, GREEN, info_panel_1, 1)
+        pygame.draw.rect(self.screen, GREEN, info_panel_2, 1)
+        pygame.draw.rect(self.screen, GREEN, info_panel_3, 1)
         
         # Текст информации
         level_text = self.font.render(f"Уровень: {self.level.number}", True, LIGHT_GRAY)
@@ -388,41 +418,52 @@ class Game:
         documents_text = self.font.render(f"Документы: {collected_count}/{len(self.documents)}", True, LIGHT_GRAY)
         controls_text = self.font.render("Управление: WASD + Shift", True, LIGHT_GRAY)
         
-        self.screen.blit(level_text, (30, 30))
-        self.screen.blit(detection_text, (30, 50))
-        self.screen.blit(documents_text, (250, 30))
-        self.screen.blit(controls_text, (250, 50))
+        self.screen.blit(level_text, (GAME_OFFSET_X + 10, 20))
+        self.screen.blit(detection_text, (GAME_OFFSET_X + 10, 40))
+        self.screen.blit(documents_text, (GAME_OFFSET_X + 230, 20))
+        self.screen.blit(controls_text, (GAME_OFFSET_X + 230, 40))
         
-        # Заголовок
-        title_text = self.title_font.render("METAL GEAR PYTHON", True, GREEN)
-        subtitle_text = self.font.render("Стелс-миссия", True, LIGHT_GRAY)
+        # Кнопки управления
+        restart_text = self.font.render("R - Перезапуск", True, LIGHT_GRAY)
+        debug_text = self.font.render("F3 - Отладка", True, LIGHT_GRAY)
         
-        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 10))
-        self.screen.blit(subtitle_text, (SCREEN_WIDTH // 2 - subtitle_text.get_width() // 2, 50))
+        self.screen.blit(restart_text, (GAME_OFFSET_X + 450, 20))
+        self.screen.blit(debug_text, (GAME_OFFSET_X + 450, 40))
+        
+        # Нижняя панель с инструкциями
+        footer_rect = pygame.Rect(0, GAME_OFFSET_Y + GAME_HEIGHT + 10, SCREEN_WIDTH, 
+                                 SCREEN_HEIGHT - (GAME_OFFSET_Y + GAME_HEIGHT + 10))
+        pygame.draw.rect(self.screen, DARK_BLUE, footer_rect)
+        pygame.draw.line(self.screen, GREEN, 
+                        (0, GAME_OFFSET_Y + GAME_HEIGHT + 10), 
+                        (SCREEN_WIDTH, GAME_OFFSET_Y + GAME_HEIGHT + 10), 2)
         
         # Инструкции
+        instructions_title = self.font.render("Инструкция:", True, GREEN)
+        self.screen.blit(instructions_title, (GAME_OFFSET_X, GAME_OFFSET_Y + GAME_HEIGHT + 25))
+        
         instructions = [
-            "Используйте WASD для движения и Shift для бега.",
-            "Подходите к врагам сзади для автоматического устранения",
-            "Соберите все секретные документы (жёлтые)",
-            "и достигните выхода (синий).",
-            "Красные зоны - зоны видимости врагов.",
-            "При полном обнаружении начинается погоня!",
-            "Если устранить более 50% врагов,",
-            "оставшиеся получат усиленную бдительность."
+            "• Используйте WASD для движения и Shift для бега",
+            "• Подходите к врагам сзади для автоматического устранения",
+            "• Соберите все секретные документы (жёлтые) и достигните выхода (синий)",
+            "• Красные зоны - зоны видимости врагов",
+            "• При полном обнаружении начинается погоня!",
+            "• Если устранить более 50% врагов, оставшиеся получат усиленную бдительность"
         ]
         
         for i, line in enumerate(instructions):
-            text = self.font.render(line, True, LIGHT_GRAY)
-            self.screen.blit(text, (20, SCREEN_HEIGHT - 180 + i * 20))
+            text = self.small_font.render(line, True, LIGHT_GRAY)
+            self.screen.blit(text, (GAME_OFFSET_X, GAME_OFFSET_Y + GAME_HEIGHT + 50 + i * 20))
         
-        # Алерты
+        # Алерты (центрируем на игровом поле)
+        alert_y = GAME_OFFSET_Y + GAME_HEIGHT // 2 - 30
+        
         if self.game_state == 'gameOver':
             alert_text = self.alert_font.render("МИССИЯ ПРОВАЛЕНА!", True, ALERT_RED)
             subtext = self.font.render("Нажмите R для перезапуска уровня", True, LIGHT_GRAY)
             
-            self.screen.blit(alert_text, (SCREEN_WIDTH // 2 - alert_text.get_width() // 2, SCREEN_HEIGHT // 2 - 30))
-            self.screen.blit(subtext, (SCREEN_WIDTH // 2 - subtext.get_width() // 2, SCREEN_HEIGHT // 2 + 20))
+            self.screen.blit(alert_text, (GAME_OFFSET_X + GAME_WIDTH // 2 - alert_text.get_width() // 2, alert_y))
+            self.screen.blit(subtext, (GAME_OFFSET_X + GAME_WIDTH // 2 - subtext.get_width() // 2, alert_y + 50))
         
         elif self.game_state == 'levelComplete':
             if self.current_level < len(self.levels) - 1:
@@ -432,18 +473,28 @@ class Game:
                 alert_text = self.alert_font.render("МИССИЯ ВЫПОЛНЕНА!", True, GREEN)
                 subtext = self.font.render("Поздравляем!", True, LIGHT_GRAY)
             
-            self.screen.blit(alert_text, (SCREEN_WIDTH // 2 - alert_text.get_width() // 2, SCREEN_HEIGHT // 2 - 30))
-            self.screen.blit(subtext, (SCREEN_WIDTH // 2 - subtext.get_width() // 2, SCREEN_HEIGHT // 2 + 20))
+            self.screen.blit(alert_text, (GAME_OFFSET_X + GAME_WIDTH // 2 - alert_text.get_width() // 2, alert_y))
+            self.screen.blit(subtext, (GAME_OFFSET_X + GAME_WIDTH // 2 - subtext.get_width() // 2, alert_y + 50))
         
         elif self.is_alert_mode:
             alert_text = self.alert_font.render("ТРЕВОГА!", True, ALERT_RED)
-            self.screen.blit(alert_text, (SCREEN_WIDTH // 2 - alert_text.get_width() // 2, SCREEN_HEIGHT // 2 - 15))
+            self.screen.blit(alert_text, (GAME_OFFSET_X + GAME_WIDTH // 2 - alert_text.get_width() // 2, alert_y))
         
         elif self.mass_elimination_detected:
             alert_text = self.alert_font.render("ОБНАРУЖЕНА АКТИВНОСТЬ АГЕНТА!", True, ALERT_YELLOW)
-            self.screen.blit(alert_text, (SCREEN_WIDTH // 2 - alert_text.get_width() // 2, SCREEN_HEIGHT // 2 - 15))
+            self.screen.blit(alert_text, (GAME_OFFSET_X + GAME_WIDTH // 2 - alert_text.get_width() // 2, alert_y))
     
     def render_debug_info(self):
+        # Панель отладки справа от игрового поля
+        debug_panel = pygame.Rect(GAME_OFFSET_X + GAME_WIDTH + 10, GAME_OFFSET_Y, 
+                                 SCREEN_WIDTH - (GAME_OFFSET_X + GAME_WIDTH + 20), GAME_HEIGHT)
+        pygame.draw.rect(self.screen, PANEL_BG, debug_panel)
+        pygame.draw.rect(self.screen, GREEN, debug_panel, 1)
+        
+        # Заголовок отладки
+        debug_title = self.font.render("Отладочная информация:", True, GREEN)
+        self.screen.blit(debug_title, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + 10))
+        
         # Информация об игроке
         player_info = [
             f"Игрок: [{int(self.player.x)}, {int(self.player.y)}]",
@@ -452,22 +503,25 @@ class Game:
         ]
         
         for i, line in enumerate(player_info):
-            text = self.font.render(line, True, WHITE)
-            self.screen.blit(text, (10, 120 + i * 20))
+            text = self.small_font.render(line, True, WHITE)
+            self.screen.blit(text, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + 40 + i * 20))
         
         # Информация о врагах
+        enemy_title = self.small_font.render("Враги:", True, GREEN)
+        self.screen.blit(enemy_title, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + 110))
+        
         for i, enemy in enumerate(self.enemies):
             if not enemy.is_eliminated:
-                text = self.font.render(f"Враг {i}: [{int(enemy.x)}, {int(enemy.y)}]", True, WHITE)
-                self.screen.blit(text, (10, 180 + i * 20))
+                text = self.small_font.render(f"Враг {i}: [{int(enemy.x)}, {int(enemy.y)}]", True, WHITE)
+                self.screen.blit(text, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + 130 + i * 15))
                 
                 if enemy.collision_count > 0:
-                    collision_text = self.font.render(f"Столкновений: {enemy.collision_count}", True, ALERT_RED)
-                    self.screen.blit(collision_text, (150, 180 + i * 20))
+                    collision_text = self.small_font.render(f"Столкновений: {enemy.collision_count}", True, ALERT_RED)
+                    self.screen.blit(collision_text, (GAME_OFFSET_X + GAME_WIDTH + 120, GAME_OFFSET_Y + 130 + i * 15))
         
         # Общая информация
-        level_text = self.font.render(f"Уровень: {self.current_level + 1}", True, WHITE)
-        debug_text = self.font.render("Режим отладки: ВКЛ (F3 для выключения)", True, WHITE)
+        level_text = self.small_font.render(f"Уровень: {self.current_level + 1}", True, WHITE)
+        debug_status = self.small_font.render("Режим отладки: ВКЛ (F3 для выключения)", True, WHITE)
         
-        self.screen.blit(level_text, (10, SCREEN_HEIGHT - 40))
-        self.screen.blit(debug_text, (10, SCREEN_HEIGHT - 20))
+        self.screen.blit(level_text, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + GAME_HEIGHT - 40))
+        self.screen.blit(debug_status, (GAME_OFFSET_X + GAME_WIDTH + 20, GAME_OFFSET_Y + GAME_HEIGHT - 20))
