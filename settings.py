@@ -1,6 +1,11 @@
 # Настройки игры
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 500
+SCREEN_WIDTH = 1000  # Увеличили ширину для размещения информации
+SCREEN_HEIGHT = 700  # Увеличили высоту
+GAME_WIDTH = 800     # Ширина игрового поля
+GAME_HEIGHT = 500    # Высота игрового поля
+GAME_OFFSET_X = 50   # Отступ игрового поля от края
+GAME_OFFSET_Y = 120  # Отступ игрового поля от верха
+
 FPS = 60
 
 # Цвета
@@ -19,6 +24,7 @@ GRAY = (102, 102, 102)
 LIGHT_GRAY = (170, 170, 170)
 ALERT_RED = (255, 68, 68)
 ALERT_YELLOW = (255, 204, 0)
+PANEL_BG = (42, 42, 42, 200)  # Полупрозрачный темный фон
 
 # Размеры объектов
 PLAYER_SIZE = 20
@@ -28,10 +34,10 @@ DOCUMENT_HEIGHT = 20
 EXIT_SIZE = 20
 
 # Скорости
-PLAYER_SPEED = 1.5
-PLAYER_RUN_SPEED = 2.6
-ENEMY_SPEED = 0.5
-ENEMY_ALERT_SPEED = 2.5
+PLAYER_SPEED = 2
+PLAYER_RUN_SPEED = 4
+ENEMY_SPEED = 1
+ENEMY_ALERT_SPEED = 3.8
 
 # Параметры обнаружения
 DETECTION_RANGE = 150
