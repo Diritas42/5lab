@@ -30,19 +30,6 @@ class Game:
         
         # Состояние игры
         self.game_state = 'playing'  # playing, detected, levelComplete, gameOver
-       self.keys = {
-        pygame.K_w: False,
-        pygame.K_s: False,
-        pygame.K_a: False,
-        pygame.K_d: False,
-        pygame.K_UP: False,
-        pygame.K_DOWN: False,
-        pygame.K_LEFT: False,
-        pygame.K_RIGHT: False,
-        pygame.K_LSHIFT: False,
-        pygame.K_r: False,
-        pygame.K_F3: False
-    }
         self.detection_level = 0
         self.is_alert_mode = False
         self.mass_elimination_detected = False
@@ -206,36 +193,34 @@ class Game:
             print(f"Документов: {len(self.documents)}")
     
     def handle_events(self):
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return False
-        elif event.type == pygame.KEYDOWN:
-            # Обновляем состояние нажатых клавиш
-            if event.key in self.keys:
-                self.keys[event.key] = True
-            
-            # Обработка специальных клавиш
-            if event.key == pygame.K_r:
-                self.restart_level()
-            if event.key == pygame.K_F3:
-                self.debug_mode = not self.debug_mode
-                print(f"Режим отладки: {'ВКЛ' if self.debug_mode else 'ВЫКЛ'}")
-            if event.key == pygame.K_n and self.game_state == 'levelComplete':
-                self.next_level()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.KEYDOWN:
+                # Перезапуск уровня по R
+                if event.key == pygame.K_r:
+                    self.restart_level()
+                
+                # Переключение режима отладки по F3
+                if event.key == pygame.K_F3:
+                    self.debug_mode = not self.debug_mode
+                    print(f"Режим отладки: {'ВКЛ' if self.debug_mode else 'ВЫКЛ'}")
+                
+                # Переход на следующий уровень по N
+                if event.key == pygame.K_n and self.game_state == 'levelComplete':
+                    self.next_level()
         
-        elif event.type == pygame.KEYUP:
-            # Обновляем состояние отпущенных клавиш
-            if event.key in self.keys:
-                self.keys[event.key] = False
-    
-    return True
+        return True
     
     def update(self):
-    if self.game_state != 'playing':
-        return
-    
-    # Обновление игрока с передачей текущего состояния клавиш
-    self.player.update(self.keys, self.level.walls)
+        if self.game_state != 'playing':
+            return
+        
+        # Получаем текущее состояние всех клавиш
+        pressed_keys = pygame.key.get_pressed()
+        
+        # Обновление игрока
+        self.player.update(pressed_keys, self.level.walls)
         
         # Автоматическое устранение врагов
         self.auto_eliminate_enemies()
